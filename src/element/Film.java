@@ -1,4 +1,4 @@
-package mediateur;
+package element;
 import java.util.List;
 
 public class Film {

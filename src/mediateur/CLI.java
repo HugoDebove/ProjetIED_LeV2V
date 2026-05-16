@@ -2,6 +2,9 @@ package mediateur;
 
 import java.util.Scanner;
 
+import dbpedia.DBPediaService;
+import element.Film;
+
 public class CLI {
     
     public static void main(String[] args) {
