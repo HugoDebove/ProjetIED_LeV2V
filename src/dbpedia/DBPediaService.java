@@ -1,9 +1,11 @@
-package mediateur;
+package dbpedia;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.exec.http.QueryExecutionHTTP;
+
+import element.Film;
 
 public class DBPediaService {
     private static final String SERVICE_URL = "http://dbpedia.org/sparql";

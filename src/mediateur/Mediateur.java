@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import element.Film;
+
 public class Mediateur {
     // Recherche par titre
     private String titreRecherche;
