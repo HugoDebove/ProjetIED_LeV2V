@@ -119,6 +119,11 @@ public class Film {
 	public void setActeurs(List<String> acteurs) {
 		this.acteurs = acteurs;
 	}
+	
+	public String getReleaseYear() {
+		String[] dates = dateSortie.split("/");
+		return dates[2];
+	}
     
     
 }
