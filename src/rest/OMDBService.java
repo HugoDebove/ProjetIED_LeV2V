@@ -2,11 +2,18 @@ package rest;
 
 import javax.xml.xpath.*;
 
+import java.util.Locale;
 import java.util.Scanner;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
+
+import element.Film;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 
 public class OMDBService {
 	
@@ -16,13 +23,26 @@ public class OMDBService {
 	public static void main(String[] args) {
 		try (Scanner scanner = new Scanner(System.in)) {
 			System.out.println("Titre du film : ");
-			String title = scanner.nextLine();
+			String title = "Avatar";
 			
 			String uri = uriBase + convertTitleIntoUri(title) + getXMLUri();
-			String plot = (String) XPath(uri, "/root/movie/@plot", XPathConstants.STRING);
+			Film movie = getMovie(uri, title);
 			
-			System.out.println(plot);
+			System.out.println(movie.toString());
 		}
+	}
+	
+	public static Film getMovie(String uri, String title) {
+		Film movie = new Film();
+		
+		String plot = (String) XPath(uri, "/root/movie/@plot", XPathConstants.STRING);
+		String released = (String) XPath(uri, "/root/movie/@released", XPathConstants.STRING);
+		
+		movie.setTitre(title);
+		movie.setResume(plot);
+		movie.setDateSortie(convertReleaseDate(released));
+		
+		return movie;
 	}
 	
 	public static Object XPath(String uri, String query, QName returnType){
@@ -62,6 +82,19 @@ public class OMDBService {
 		return "&r=xml";
 	}
 	
+	private static String convertReleaseDate(String dateOriginal) {
+		DateTimeFormatter formatEntree = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+
+		// Format de sortie
+		DateTimeFormatter formatSortie = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+		// Conversion
+		LocalDate date = LocalDate.parse(dateOriginal, formatEntree);
+		String dateFormatee = date.format(formatSortie);
+
+		return dateFormatee; 
+		
+	}
 	
 
 }
