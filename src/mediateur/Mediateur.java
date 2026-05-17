@@ -20,9 +20,9 @@ public class Mediateur {
     private boolean listeFilmsTrouvee = false;
     
     /**
-     * Cherche les donnnées venant des 3 sources avec un titre
+     * Permet de chercher tous les films venant des 3 sources avec un titre
      * 
-     * @param title : titre du film 
+     * @param title - Titre du film 
      * @return Tous les films trouvée par les sources
      */
     public ArrayList<Film> searchByTitle(String title) {
@@ -45,18 +45,37 @@ public class Mediateur {
     	return movies;
     }
     
+    /**
+     * Permet de chercher tous les films dans les quelles un acteur / une actrice à jouer
+     * 
+     * @param name - nom de l'acteur / l'actrice 
+     * @return Tous les films trouver par les sources
+     */
     public void searchByActorName(String name) {
     	
     }
     
+    /**
+     * Permet de récupérer les données venant de la source base de données
+     *
+     * @param title - Titre du film
+     * @return Liste de tous les films trouvées avec (...)
+     */
     private ArrayList<Film> getDataFromDB(String title) {
     	DBQuery dbq = new DBQuery();
     	return dbq.getMoviesInformations(title);
     }
     
     private void getDataFromDBBedia() {
+    	// TODO : A faire par hugo
     }
     
+    /**
+     * Permet de récupérer les données venant de la source OMBD en fonction des films trouver avec la source base de données
+     * 
+     * @param moviesFromDB - Liste de tous les films trouvées
+     * @param title - Titre du film
+     */
     private void searchDataFromOMBDWithDBData(ArrayList<Film> moviesFromDB, String title) {
     	for(Film movie : moviesFromDB) {
 			movie.setTitre(title);
@@ -67,6 +86,13 @@ public class Mediateur {
 		}
     }
     
+    /**
+     * Permet de récupérer les données venant de la source OMDB
+     * 
+     * @param title - titre du film
+     * @param year - année de sortie du film
+     * @return un Film avec le résumé et la date de sortie
+     */
     private Film getDataFromOMBD(String title, String year) {
     	OMDBQuery omdbq = new OMDBQuery();
     	
