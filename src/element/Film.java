@@ -16,20 +16,19 @@ public class Film {
 
     public Film() {}
 
-    public Film(String titre, String realisateur, String producteur, String dateSortie) {
-        this.titre = titre;
-        this.realisateur = realisateur;
-        this.producteur = producteur;
-        this.dateSortie = dateSortie;
-    }
-
     @Override
     public String toString() {
         return "------------------------------------------\n" +
-               "TITRE       : " + titre + "\n" +
+               "TITRE : " + titre + "\n" +
+               "SORTIE : " + (dateSortie != null ? dateSortie : "Inconnue") + "\n" +
+               "GENRE : " + genre + "\n" +
+               "DISTRIBUTEUR : " + distributeur + "\n" +
+               "BUDGET : " + budget + "\n" +
+               "REVENU USA : " + revenusUSA + "\n" +
+               "REVENU MONDIAUX : " + revenusMondiaux + "\n" +
                "RÉALISATEUR : " + realisateur + "\n" +
                "PRODUCTEUR : " + producteur + "\n" +
-               "SORTIE      : " + (dateSortie != null ? dateSortie : "Inconnue") + "\n" +
+               "RESUME : " + resume + "\n" +
                "------------------------------------------";
     }
 
