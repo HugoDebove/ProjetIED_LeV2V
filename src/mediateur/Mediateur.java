@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import element.Film;
+import jdbc.DBQuery;
+import rest.OMDBQuery;
 
 public class Mediateur {
     // Recherche par titre
@@ -16,24 +18,85 @@ public class Mediateur {
     private String nomActeurRecherche;
     private List<Film> filmsParActeur;
     private boolean listeFilmsTrouvee = false;
-
-    // Simulation recherche de film par titre
-    public String rechercherFilm() {
-        filmResultat = new Film();
-        filmResultat.setTitre(titreRecherche);
-        filmResultat.setDateSortie("2026-05-15");
-        filmResultat.setGenre("Science-Fiction");
-        filmResultat.setDistributeur("CY Films");
-        filmResultat.setBudget("150000000");
-        filmResultat.setRevenusUSA("200000000");
-        filmResultat.setRevenusMondiaux("500000000");
-        filmResultat.setRealisateur("Hugo Debove");
-        filmResultat.setResume("Hugo donne une tarte divine...");
-        filmResultat.setActeurs(Arrays.asList("Hugo Debove", "Theo Amedro", "Massin Kheloufi", "Ilyes Aghouiles", "Dominique Gon"));
-        
-        filmTrouve = true;
-        listeFilmsTrouvee = false; // Pour cacher la recherche par acteur
-        return null; // On ne change pas de pages
+    
+    /**
+     * Permet de chercher tous les films venant des 3 sources avec un titre
+     * 
+     * @param title - Titre du film 
+     * @return Tous les films trouvée par les sources
+     */
+    public ArrayList<Film> searchByTitle(String title) {
+    	ArrayList<Film> movies = new ArrayList<>();
+    	
+    	// Récupération des données venant de bd
+    	ArrayList<Film> moviesFromDB = getDataFromDB(title.toLowerCase());
+    	
+    	if(moviesFromDB.size() > 0) {
+    		// Récupération des données venant de omdb avec le titre et les années de production pour pouvoir fusionner les données
+    		searchDataFromOMBDWithDBData(moviesFromDB, title);
+    		movies.addAll(moviesFromDB);
+    	}
+    	else {
+    		// Cas où on a rien trouver dans la bd donc on cherche les données sans l'année de production
+    		Film movieFromOMBD = getDataFromOMBD(title, "");
+    		movies.add(movieFromOMBD);
+    	}
+    	
+    	return movies;
+    }
+    
+    /**
+     * Permet de chercher tous les films dans les quelles un acteur / une actrice à jouer
+     * 
+     * @param name - nom de l'acteur / l'actrice 
+     * @return Tous les films trouver par les sources
+     */
+    public void searchByActorName(String name) {
+    	
+    }
+    
+    /**
+     * Permet de récupérer les données venant de la source base de données
+     *
+     * @param title - Titre du film
+     * @return Liste de tous les films trouvées avec (...)
+     */
+    private ArrayList<Film> getDataFromDB(String title) {
+    	DBQuery dbq = new DBQuery();
+    	return dbq.getMoviesInformations(title);
+    }
+    
+    private void getDataFromDBBedia() {
+    	// TODO : A faire par hugo
+    }
+    
+    /**
+     * Permet de récupérer les données venant de la source OMBD en fonction des films trouver avec la source base de données
+     * 
+     * @param moviesFromDB - Liste de tous les films trouvées
+     * @param title - Titre du film
+     */
+    private void searchDataFromOMBDWithDBData(ArrayList<Film> moviesFromDB, String title) {
+    	for(Film movie : moviesFromDB) {
+			movie.setTitre(title);
+			Film movieFromOMBD = getDataFromOMBD(title, movie.getReleaseYear());
+			if(movieFromOMBD != null) {
+				movie.setResume(movieFromOMBD.getResume());
+			}
+		}
+    }
+    
+    /**
+     * Permet de récupérer les données venant de la source OMDB
+     * 
+     * @param title - titre du film
+     * @param year - année de sortie du film
+     * @return un Film avec le résumé et la date de sortie
+     */
+    private Film getDataFromOMBD(String title, String year) {
+    	OMDBQuery omdbq = new OMDBQuery();
+    	
+    	return omdbq.getMovie(title, year);
     }
 
     // Simulation recherche de film par acteur

@@ -8,7 +8,38 @@ import element.Film;
 public class CLI {
     
     public static void main(String[] args) {
-        DBPediaService dbpedia = new DBPediaService();
+        Scanner reader = new Scanner(System.in);
+        Mediateur med = new Mediateur();
+        
+        System.out.println("******************************************");
+        System.out.println("   MÉDIATEUR CINÉMA - VERSION TERMINAL   ");
+        System.out.println("******************************************");
+
+        while (true) {
+            // Modification pour demander un titre de film
+            System.out.print("\nEntrez le titre d'un film (ou 'exit' pour quitter) : ");
+            String input = reader.nextLine();
+
+            if (input.equalsIgnoreCase("exit")) {
+                break;
+            }
+
+            System.out.println("Recherche des infos pour : " + input + "...");
+            
+            try {
+                med.searchByTitle(input);
+            } catch (Exception e) {
+                System.err.println("Erreur : " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Fermeture du médiateur. Au revoir !");
+        reader.close();
+    }
+    
+    private void latestVersion() {
+    	DBPediaService dbpedia = new DBPediaService();
         Scanner reader = new Scanner(System.in);
         
         System.out.println("******************************************");

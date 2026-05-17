@@ -1,6 +1,8 @@
 package jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import element.Film;
@@ -9,42 +11,40 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class DBQuery {
-
-	public static void main(String[] args) {
-		ArrayList<Film> movies = getMoviesInformations("king kong");
-		showAllMovies(movies);
-	}
-	
-	public static void showAllMovies(ArrayList<Film> movies) {
-		String info = "";
 		
-		for(Film movie : movies) {
-			info = movie.toString();
-			System.out.println(info);
-		}
-	}
-	
-	public static ArrayList<Film> getMoviesInformations(String title) {
+	/**
+	 * Permet de récupérer des données de film avec un titre donnée
+	 * 
+	 * @param title - titre du film donnée
+	 * @return List de tous les films trouvées
+	 */
+	public ArrayList<Film> getMoviesInformations(String title) {
 		ArrayList<Film> movies = new ArrayList<>();
 		try {
-			String selectFilmsQuery = "SELECT * FROM films Where titre = ?";
+			Connection dbConnection = JdbcConnection.getConnection(); // Connection à la bd
 			
-			Connection dbConnection = JdbcConnection.getConnection();
+			// Préparation de la requête pour la bd
+			String selectFilmsQuery = "SELECT * FROM films Where titre = ?";
 			PreparedStatement preparedStatement = dbConnection.prepareStatement(selectFilmsQuery);
 			preparedStatement.setString(1, title);
 			
-			ResultSet res = preparedStatement.executeQuery();
+			ResultSet res = preparedStatement.executeQuery(); // Résultat de la requête
 			
-			while(res.next()) {
-				Film movie = new Film();
-				movie.setTitre(res.getString("titre"));
-				movie.setDateSortie(res.getString("date_de_sortie"));
-				movie.setGenre(res.getString("genre"));
-				movie.setDistributeur(res.getString("distributeur"));
-				movie.setBudget(res.getString("budget"));
-				movie.setRevenusUSA(res.getString("revenus_etats_unis"));
-				movie.setRevenusMondiaux(res.getString("revenus_mondiaux"));
-				movies.add(movie);
+			if (!res.next()) {
+				// Cas où on ne trouve rien dans la bd
+			    System.out.println("Aucun résultat trouvé dans la base de données pour le film : " + title);
+			} else {
+			    do {
+			        Film movie = new Film();
+			        movie.setTitre(res.getString("titre"));
+			        movie.setDateSortie(converteReleaseDate(res.getString("date_de_sortie")));
+			        movie.setGenre(res.getString("genre"));
+			        movie.setDistributeur(res.getString("distributeur"));
+			        movie.setBudget(res.getString("budget"));
+			        movie.setRevenusUSA(res.getString("revenus_etats_unis"));
+			        movie.setRevenusMondiaux(res.getString("revenus_mondiaux"));
+			        movies.add(movie);
+			    } while (res.next());
 			}
 			
 			preparedStatement.close();
@@ -53,4 +53,23 @@ public class DBQuery {
 		}
 		return movies;
 	}
+	
+	
+	/**
+	 * Permet de modifier le format de la date de sortie
+	 * 
+	 * @param dateOriginal - date sous le mauvais format (yyyy-MM-dd HH:mm:ss)
+	 * @return la date sous le bon format (dd/MM/yyyu)
+	 */
+	private String converteReleaseDate(String dateOriginal) {
+		DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+		LocalDateTime dateTime = LocalDateTime.parse(dateOriginal, inputFormat);
+		String newDate = dateTime.format(outputFormat);
+
+		return newDate;
+	}
+	
+	
 }
