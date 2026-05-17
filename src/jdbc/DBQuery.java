@@ -71,7 +71,6 @@ public class DBQuery {
 
 		DateTimeFormatter formatSortie = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-		// Conversion
 		LocalDateTime dateTime = LocalDateTime.parse(dateOriginal, formatEntree);
 		String dateFormatee = dateTime.format(formatSortie);
 

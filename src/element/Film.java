@@ -20,7 +20,7 @@ public class Film {
     public String toString() {
         return "------------------------------------------\n" +
                "TITRE : " + titre + "\n" +
-               "SORTIE : " + (dateSortie != null ? dateSortie : "Inconnue") + "\n" +
+               "SORTIE : " + dateSortie + "\n" +
                "GENRE : " + genre + "\n" +
                "DISTRIBUTEUR : " + distributeur + "\n" +
                "BUDGET : " + budget + "\n" +
