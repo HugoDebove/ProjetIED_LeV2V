@@ -23,7 +23,7 @@ public class OMDBService {
 	public static void main(String[] args) {
 		try (Scanner scanner = new Scanner(System.in)) {
 			System.out.println("Titre du film : ");
-			String title = "Avatar";
+			String title = "kfdghjkl";
 			
 			String uri = uriBase + convertTitleIntoUri(title) + getXMLUri();
 			Film movie = getMovie(uri, title);
@@ -36,12 +36,18 @@ public class OMDBService {
 		Film movie = new Film();
 		
 		String plot = (String) XPath(uri, "/root/movie/@plot", XPathConstants.STRING);
+		System.out.println("plot fait");
 		String released = (String) XPath(uri, "/root/movie/@released", XPathConstants.STRING);
+		System.out.println("released fait");
 		
-		movie.setTitre(title);
-		movie.setResume(plot);
-		movie.setDateSortie(convertReleaseDate(released));
-		
+		if(!plot.isEmpty()) {
+			movie.setTitre(title);
+			movie.setResume(plot);
+			if(!released.isEmpty()) {
+				movie.setDateSortie(convertReleaseDate(released));				
+			}
+		}
+				
 		return movie;
 	}
 	
