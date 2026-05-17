@@ -11,39 +11,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class DBQuery {
-	
-	// Méthode a enlever plus tard
-	
-	// TODO : Ajouter une recherche pas année pour etre plus précis ???
-
-	public static void main(String[] args) {
-		ArrayList<Film> movies = getMoviesInformations("king kong");
-		showAllMovies(movies);
-	}
-	
-	public static void showAllMovies(ArrayList<Film> movies) {
-		String info = "";
 		
-		for(Film movie : movies) {
-			info = movie.toString();
-			System.out.println(info);
-		}
-	}
-	
-	// Méthode a garder
-	
-	public static ArrayList<Film> getMoviesInformations(String title) {
+	/**
+	 * Permet de récupérer des données de film avec un titre donnée
+	 * 
+	 * @param title - titre du film donnée
+	 * @return List de tous les films trouvées
+	 */
+	public ArrayList<Film> getMoviesInformations(String title) {
 		ArrayList<Film> movies = new ArrayList<>();
 		try {
-			String selectFilmsQuery = "SELECT * FROM films Where titre = ?";
+			Connection dbConnection = JdbcConnection.getConnection(); // Connection à la bd
 			
-			Connection dbConnection = JdbcConnection.getConnection();
+			// Préparation de la requête pour la bd
+			String selectFilmsQuery = "SELECT * FROM films Where titre = ?";
 			PreparedStatement preparedStatement = dbConnection.prepareStatement(selectFilmsQuery);
 			preparedStatement.setString(1, title);
 			
-			ResultSet res = preparedStatement.executeQuery();
+			ResultSet res = preparedStatement.executeQuery(); // Résultat de la requête
 			
 			if (!res.next()) {
+				// Cas où on ne trouve rien dans la bd
 			    System.out.println("Aucun résultat trouvé dans la base de données pour le film : " + title);
 			} else {
 			    do {
@@ -66,15 +54,21 @@ public class DBQuery {
 		return movies;
 	}
 	
-	private static String converteReleaseDate(String dateOriginal) {
-		DateTimeFormatter formatEntree = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	
+	/**
+	 * Permet de modifier le format de la date de sortie
+	 * 
+	 * @param dateOriginal - date sous le mauvais format (yyyy-MM-dd HH:mm:ss)
+	 * @return la date sous le bon format (dd/MM/yyyu)
+	 */
+	private String converteReleaseDate(String dateOriginal) {
+		DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-		DateTimeFormatter formatSortie = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		LocalDateTime dateTime = LocalDateTime.parse(dateOriginal, inputFormat);
+		String newDate = dateTime.format(outputFormat);
 
-		LocalDateTime dateTime = LocalDateTime.parse(dateOriginal, formatEntree);
-		String dateFormatee = dateTime.format(formatSortie);
-
-		return dateFormatee;
+		return newDate;
 	}
 	
 	
