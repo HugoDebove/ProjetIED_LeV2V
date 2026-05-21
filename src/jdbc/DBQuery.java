@@ -38,6 +38,7 @@ public class DBQuery {
 			        Film movie = new Film();
 			        movie.setTitre(res.getString("titre"));
 			        movie.setDateSortie(converteReleaseDate(res.getString("date_de_sortie")));
+			        movie.getReleaseYearByReleaseDate();
 			        movie.setGenre(res.getString("genre"));
 			        movie.setDistributeur(res.getString("distributeur"));
 			        movie.setBudget(res.getString("budget"));

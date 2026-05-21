@@ -4,6 +4,7 @@ import java.util.List;
 public class Film {
     private String titre;
     private String dateSortie;
+    private String anneeSortie;
     private String genre;
     private String distributeur;
     private String budget;
@@ -120,9 +121,17 @@ public class Film {
 		this.acteurs = acteurs;
 	}
 	
-	public String getReleaseYear() {
+	public String getAnneeSortie() {
+		return anneeSortie;
+	}
+
+	public void setAnneeSortie(String anneeSortie) {
+		this.anneeSortie = anneeSortie;
+	}
+
+	public void getReleaseYearByReleaseDate() {
 		String[] dates = dateSortie.split("/");
-		return dates[2];
+		setAnneeSortie(dates[2]);
 	}
     
     

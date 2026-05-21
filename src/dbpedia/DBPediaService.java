@@ -283,7 +283,7 @@ public class DBPediaService {
                 Matcher matcher = ANNEE_PATTERN.matcher(f.getTitre());
                 if (matcher.find()) {
                     String annee = matcher.group(1);
-                    f.setDateSortie(annee);
+                    f.setAnneeSortie(annee);
                 }
             }
         }
