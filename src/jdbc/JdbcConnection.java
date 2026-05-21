@@ -9,13 +9,14 @@ public class JdbcConnection {
 	private static String base = "postgres";
 	private static String user = "postgres.nivofwzpfeberatsxaxy";
 	private static String password = "hugoettheoIED";
-	private static String url = "jdbc:postgresql://" + host + ":6543/" + base;
+	private static String url = "jdbc:postgresql://" + host + ":5432/" + base;
 
 	/**
 	 * Singleton instance.
 	 */
 	private static Connection connection;
 
+	
 	public static Connection getConnection() {		
 		if (connection == null) {
 			try {
