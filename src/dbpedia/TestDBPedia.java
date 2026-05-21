@@ -7,7 +7,7 @@ import element.Film;
 public class TestDBPedia {
 
     public static void main(String[] args) {
-        DBPediaService dbpedia = new DBPediaService();
+    	DBPediaService dbpedia = new DBPediaService();
         Scanner reader = new Scanner(System.in);
         
         System.out.println("MÉDIATEUR DBPEDIA");
