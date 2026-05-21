@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import dbpedia.DBPediaService;
 import element.Film;
 import jdbc.DBQuery;
 import rest.OMDBQuery;
@@ -32,6 +33,8 @@ public class Mediateur {
     	ArrayList<Film> moviesFromDB = getDataFromDB(title.toLowerCase());
     	System.out.println("On a trouver " + moviesFromDB.size() + " filme");
     	
+    	ArrayList<Film> moviesFromDBPedia = getDataFromDBBedia(title);
+    	
     	if(moviesFromDB.size() > 0) {
     		// Récupération des données venant de omdb avec le titre et les années de production pour pouvoir fusionner les données
     		searchDataFromOMBDWithDBData(moviesFromDB, title);
@@ -44,6 +47,61 @@ public class Mediateur {
     	}
     	
     	return movies;
+    }
+    
+    private ArrayList<Film> mergeDBAndDBPedia(ArrayList<Film> moviesFromDB, ArrayList<Film> moviesFromDBPedia){
+    	ArrayList<Film> movies = new ArrayList<>(moviesFromDB);
+    	
+    	for(Film movieDB : movies) {
+    		for(Film movieDBP : moviesFromDBPedia) {
+    			//TODO : ajouter la condition de merge (pour l'instant seulement l'année de sortie si il y a
+    			// Faire attention au cas ou l'année est la meme (rajouter un second critere dans tous les cas
+    			if(movieDBP.getAnneeSortie() != null || !movieDBP.getAnneeSortie().isEmpty()) {
+    				if(movieDB.getAnneeSortie() == movieDBP.getAnneeSortie()) {
+    					movieDB.setActeurs(movieDBP.getActeurs());
+    					movieDB.setRealisateur(movieDBP.getRealisateur());
+    					movieDB.setProducteur(movieDBP.getProducteur());
+    				}
+    				
+    				// TODO : supprimer le film de la list de dbpedia
+    			}
+    			else {
+    				// On doit choisir un critere dans le cas ou le film est unique
+    			}
+    		}
+    	}
+    	
+    	return movies;
+    }
+    
+    public void searchByTitleTest(String title) {
+    	ArrayList<Film> movies = new ArrayList<>();
+    	
+    	// Récupération des données venant de bd
+    	ArrayList<Film> moviesFromDB = getDataFromDB(title.toLowerCase());
+    	System.out.println("On a trouver " + moviesFromDB.size() + " filme");
+    	
+    	ArrayList<Film> moviesFromDBPedia = getDataFromDBBedia(title);
+    	
+    	if(moviesFromDBPedia.size() > 1) {
+    		for(Film movie : moviesFromDB) {
+    			boolean research = true;
+    			while(research) {
+    				
+    			}
+        	}
+    	}
+    	
+    	showMovies(moviesFromDB);
+    	showMovies(moviesFromDBPedia);
+    	
+    }
+    
+    private void showMovies(ArrayList<Film> movies) {
+    	//TODO : A supprimer après
+    	for(Film movie : movies) {
+    		System.out.println(movie.toString());
+    	}
     }
     
     /**
@@ -67,8 +125,9 @@ public class Mediateur {
     	return dbq.getMoviesInformations(title);
     }
     
-    private void getDataFromDBBedia() {
-    	// TODO : A faire par hugo
+    private ArrayList<Film> getDataFromDBBedia(String title) {
+    	DBPediaService dbp = new DBPediaService();
+    	return dbp.getFilmDetailsByTitle(title);
     }
     
     /**
@@ -80,7 +139,7 @@ public class Mediateur {
     private void searchDataFromOMBDWithDBData(ArrayList<Film> moviesFromDB, String title) {
     	for(Film movie : moviesFromDB) {
 			movie.setTitre(title);
-			Film movieFromOMBD = getDataFromOMBD(title, movie.getReleaseYear());
+			Film movieFromOMBD = getDataFromOMBD(title, movie.getAnneeSortie());
 			if(movieFromOMBD != null) {
 				movie.setResume(movieFromOMBD.getResume());
 			}
