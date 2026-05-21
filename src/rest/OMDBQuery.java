@@ -14,6 +14,7 @@ import element.Film;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 
 public class OMDBQuery {
@@ -23,35 +24,45 @@ public class OMDBQuery {
 
 	
 	public ArrayList<Film> getMovies(String title){
-		ArrayList<Film> movies = new ArrayList<>();
-		
-		String uri = createURI(title, "", true);
-		System.out.println(uri);
-		
-		NodeList  results = (NodeList) XPath(uri, "/root/result", XPathConstants.NODESET);
-		
-		if(results != null && results.getLength() > 0) {
-			for (int i = 0; i < results.getLength(); i++) {
-		        Node node = results.item(i);
-		        
-		        String t  = node.getAttributes().getNamedItem("title").getNodeValue();
-		        String year   = node.getAttributes().getNamedItem("year").getNodeValue();
-		        
-		        if(t.equals(title)) {
-		        	Film movie = new Film();
-		        	movie.setTitre(t);
-		        	movie.setAnneeSortie(year);
-		        	
-		        	movies.add(movie);
-		        }
-		        
-		        for(Film movie : movies) {
-					movie = getMovie(movie.getTitre(), movie.getAnneeSortie());
-				}
-			}
-		}
-		
-		return movies;
+	    ArrayList<Film> movies = new ArrayList<>();
+	    
+	    String uri = createURI(title, "", true);
+	    // System.out.println(uri);
+	    
+	    NodeList results = (NodeList) XPath(uri, "/root/result", XPathConstants.NODESET);
+	    
+	    // On extrait tous les films correspondants de la recherche globale
+	    if(results != null && results.getLength() > 0) {
+	        for (int i = 0; i < results.getLength(); i++) {
+	            Node node = results.item(i);
+	            
+	            String t  = node.getAttributes().getNamedItem("title").getNodeValue();
+	            String year   = node.getAttributes().getNamedItem("year").getNodeValue();
+	            
+	            // On vérifie si le titre correspond
+	            if(t.equalsIgnoreCase(title)) {
+	                Film movie = new Film();
+	                movie.setTitre(t);
+	                movie.setAnneeSortie(year);
+	                
+	                movies.add(movie);
+	            }
+	        }
+	    }
+	    
+	    for (int i = 0; i < movies.size(); i++) {
+	        Film filmIncomplet = movies.get(i);
+	        Film filmDetaille = getMovie(filmIncomplet.getTitre(), filmIncomplet.getAnneeSortie());
+	        
+	        // On transfère les données récupérées dans notre film de la liste
+	        if (filmDetaille != null) {
+	            filmIncomplet.setResume(filmDetaille.getResume());
+	            filmIncomplet.setRealisateur(filmDetaille.getRealisateur());
+	            filmIncomplet.setDateSortie(filmDetaille.getDateSortie());
+	        }
+	    }
+	    
+	    return movies;
 	}
 	
 	/**
@@ -70,8 +81,8 @@ public class OMDBQuery {
 		String director = (String) XPath(uri, "/root/movie/@director", XPathConstants.STRING);
 
 		
-		if(!plot.isEmpty()) {
-			System.out.println("Film trouvée avec OMDB");
+		if(!(plot == null) && !plot.isEmpty()) {
+			// System.out.println("Film trouvée avec OMDB");
 			movie.setResume(plot);
 			movie.setRealisateur(director);
 			if(!released.isEmpty()) {
@@ -79,7 +90,7 @@ public class OMDBQuery {
 			}
 		}
 		else {
-			System.out.println("Aucun film trouvée avec OMDB");
+			// System.out.println("Aucun film trouvée avec OMDB");
 		}
 			
 		return movie;
@@ -173,12 +184,20 @@ public class OMDBQuery {
 	 * @return la date sous le bon format (dd/MM/yyyu)
 	 */
 	private String convertReleaseDate(String dateOriginal) {
-		DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
-		DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	    if (dateOriginal == null || dateOriginal.trim().isEmpty() || dateOriginal.equalsIgnoreCase("N/A")) {
+	        return "Inconnue";
+	    }
+	    
+	    try {
+	        DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+	        DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-		LocalDate date = LocalDate.parse(dateOriginal, inputFormat);
-		String newDate = date.format(outputFormat);
-
-		return newDate; 
+	        LocalDate date = LocalDate.parse(dateOriginal, inputFormat);
+	        return date.format(outputFormat);
+	        
+	    } catch (DateTimeParseException e) {
+	        System.err.println("Impossible de parser la date d'OMDB : " + dateOriginal);
+	        return "Inconnue";
+	    }
 	}
 }
