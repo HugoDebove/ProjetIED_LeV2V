@@ -17,7 +17,7 @@ public class DBPediaService {
     private static final String SERVICE_URL =
             "https://dbpedia.org/sparql";
 
-    public List<Film> getFilmDetailsByTitle(String filmTitle) {
+    public ArrayList<Film> getFilmDetailsByTitle(String filmTitle) {
 
         Map<String, Film> filmsTrouves = new HashMap<>();
 
@@ -168,7 +168,7 @@ public class DBPediaService {
                 }
             }
             
-            List<Film> listeFilms = new ArrayList<>(filmsTrouves.values());
+            ArrayList<Film> listeFilms = new ArrayList<>(filmsTrouves.values());
 
             if (listeFilms.size() > 1) {
                 // Expression régulière pour chercher 4 chiffres consécutifs entre parenthèses : (1997)
@@ -183,7 +183,7 @@ public class DBPediaService {
                             
                             // On suppose que ta classe Film possède un setter pour la date/année
                             // Ajuste le nom de la méthode selon ton code (ex: setAnnee ou setDate)
-                            f.setDateSortie(annee);
+                            f.setAnneeSortie(annee);
                         }
                     }
                 }
