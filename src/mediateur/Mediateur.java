@@ -232,22 +232,8 @@ public class Mediateur {
     	return canMerge;
     }
     
-    private void showMovies(ArrayList<Film> movies) {
-    	//TODO : A supprimer après
-    	for(Film movie : movies) {
-    		System.out.println(movie.toString());
-    	}
-    }
-    
-    /**
-     * Permet de chercher tous les films dans les quelles un actor / une actrice à jouer
-     * 
-     * @param name - nom de l'acteur / l'actrice 
-     * @return Tous les films trouver par les sources
-     */
     /**
      * Permet de chercher tous les films dans lesquels un acteur / une actrice a joué
-     * Enchaînement : DBPedia (Acteur -> Films) -> OMDB (Passerelle) -> BD Locale
      * 
      * @param name - nom de l'acteur / l'actrice 
      */
@@ -344,6 +330,26 @@ public class Mediateur {
             finalMoviesList.sort((f1, f2) -> Integer.compare(f2.getInfoScore(true), f1.getInfoScore(true)));
         }
         
+        // Derniere verif : On verifie que l'acteur est bien dans la liste des acteurs
+        ArrayList<Film> verifMoviesList = new ArrayList<>();
+        for (Film movie : finalMoviesList) {
+            if (movie.getActeurs() != null && !movie.getActeurs().isEmpty()) {
+                boolean actorFound = false;
+                for (String actor : movie.getActeurs()) {
+                    if (actor.toLowerCase().contains(name.toLowerCase().trim())) {
+                        actorFound = true;
+                        break;
+                    }
+                }
+                if (actorFound) {
+                    verifMoviesList.add(movie);
+                }
+            } else {
+                verifMoviesList.add(movie);
+            }
+        }
+        finalMoviesList = verifMoviesList;
+        
         this.filmsParActeur = finalMoviesList;
         this.listeFilmsTrouvee = !finalMoviesList.isEmpty();
         this.filmTrouve = false;
@@ -409,25 +415,6 @@ public class Mediateur {
     	OMDBQuery omdbq = new OMDBQuery();
     	
     	return omdbq.getMovies(title);
-    }
-
-    // Simulation recherche de film par actor
-    public String rechercherFilmsParActeur() {
-        filmsParActeur = new ArrayList<>();
-        
-        Film f1 = new Film();
-        f1.setTitre("Le retour du giga beau gosse");
-        f1.setDateSortie("2024");
-        f1.setGenre("Action");
-        f1.setDistributeur("Universal");
-        f1.setRealisateur("Nolan");
-        f1.setProducteur("Spielberg");
-        
-        filmsParActeur.add(f1);
-        
-        listeFilmsTrouvee = true;
-        filmTrouve = false; // Pour cacher la recherche par titre
-        return null; // On ne change pas de pages
     }
 
 	public String getTitreRecherche() {
