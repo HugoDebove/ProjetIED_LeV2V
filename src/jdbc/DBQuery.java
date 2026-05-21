@@ -34,6 +34,7 @@ public class DBQuery {
 				// Cas où on ne trouve rien dans la bd
 			    System.out.println("Aucun résultat trouvé dans la base de données pour le film : " + title);
 			} else {
+				
 			    do {
 			        Film movie = new Film();
 			        movie.setTitre(res.getString("titre"));
@@ -46,6 +47,7 @@ public class DBQuery {
 			        movie.setRevenusMondiaux(res.getString("revenus_mondiaux"));
 			        movies.add(movie);
 			    } while (res.next());
+			    System.out.println("On a trouvée " + movies.size() + " avec jdbc");
 			}
 			
 			preparedStatement.close();

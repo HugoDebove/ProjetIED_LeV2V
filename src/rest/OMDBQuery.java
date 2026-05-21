@@ -2,6 +2,7 @@ package rest;
 
 import javax.xml.xpath.*;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
 
@@ -16,9 +17,42 @@ import java.time.format.DateTimeFormatter;
 
 
 public class OMDBQuery {
-	
+		
 	static String apiKey = "49fc2268";
 	static String uriBase = "http://www.omdbapi.com/?apikey=" + apiKey;
+
+	
+	public ArrayList<Film> getMovies(String title){
+		ArrayList<Film> movies = new ArrayList<>();
+		
+		String uri = createURI(title, "", true);
+		System.out.println(uri);
+		
+		NodeList  results = (NodeList) XPath(uri, "/root/result", XPathConstants.NODESET);
+		
+		if(results != null && results.getLength() > 0) {
+			for (int i = 0; i < results.getLength(); i++) {
+		        Node node = results.item(i);
+		        
+		        String t  = node.getAttributes().getNamedItem("title").getNodeValue();
+		        String year   = node.getAttributes().getNamedItem("year").getNodeValue();
+		        
+		        if(t.equals(title)) {
+		        	Film movie = new Film();
+		        	movie.setTitre(t);
+		        	movie.setAnneeSortie(year);
+		        	
+		        	movies.add(movie);
+		        }
+		        
+		        for(Film movie : movies) {
+					movie = getMovie(movie.getTitre(), movie.getAnneeSortie());
+				}
+			}
+		}
+		
+		return movies;
+	}
 	
 	/**
 	 * Permet de récuperer un film avec differente informations donnée (titre, année)
@@ -27,17 +61,19 @@ public class OMDBQuery {
 	 * @param year - année de sortie du film (pas obligatoire pour trouver un film)
 	 * @return un film avec son resume et la date de sortie
 	 */
-	public Film getMovie(String title, String year) {
+	public Film getMovie(String title, String year) {	
 		Film movie = new Film();
-		
-		String uri = createURI(title, year);
+		String uri = createURI(title, year, false);
 
 		String plot = (String) XPath(uri, "/root/movie/@plot", XPathConstants.STRING);
 		String released = (String) XPath(uri, "/root/movie/@released", XPathConstants.STRING);
+		String director = (String) XPath(uri, "/root/movie/@director", XPathConstants.STRING);
+
 		
 		if(!plot.isEmpty()) {
-			movie.setTitre(title);
+			System.out.println("Film trouvée avec OMDB");
 			movie.setResume(plot);
+			movie.setRealisateur(director);
 			if(!released.isEmpty()) {
 				movie.setDateSortie(convertReleaseDate(released));				
 			}
@@ -45,7 +81,7 @@ public class OMDBQuery {
 		else {
 			System.out.println("Aucun film trouvée avec OMDB");
 		}
-				
+			
 		return movie;
 	}
 	
@@ -77,8 +113,14 @@ public class OMDBQuery {
 	 * @param year - année de sorti du film
 	 * @return une chaine de caractere correspondant a l'uri complete
 	 */
-	private String createURI(String title, String year) {
-		String uri = uriBase + convertTitleIntoUri(title);
+	private String createURI(String title, String year, boolean needList) {
+		String uri = uriBase;
+		if(needList) {
+			uri += convertTitleIntoUriList(title);
+		}
+		else {
+			uri += convertTitleIntoUri(title);
+		}
 		
 		if(!year.isEmpty()) {
 			uri += convertYearIntoUri(year);
@@ -98,6 +140,11 @@ public class OMDBQuery {
 	private String convertTitleIntoUri(String title) {
 		String[] words = title.split(" ");
 		return "&t=" + String.join("+", words);
+	}
+	
+	private String convertTitleIntoUriList(String title) {
+		String[] words = title.split(" ");
+		return "&s=" + String.join("+", words);
 	}
 	
 	/**
@@ -134,6 +181,4 @@ public class OMDBQuery {
 
 		return newDate; 
 	}
-	
-
 }

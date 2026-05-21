@@ -26,9 +26,7 @@ public class CLI {
             }
 
             System.out.println("Recherche des infos pour : " + input + "...");
-            
-            med.searchByTitleTest(input);
-            /*
+                        
             try {
                 ArrayList<Film> movies = med.searchByTitle(input);
                 
@@ -39,7 +37,7 @@ public class CLI {
                 System.err.println("Erreur : " + e.getMessage());
                 e.printStackTrace();
             }
-            */
+            
         }
 
         System.out.println("Fermeture du médiateur. Au revoir !");
