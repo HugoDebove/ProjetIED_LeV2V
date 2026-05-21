@@ -22,7 +22,12 @@ public class OMDBQuery {
 	static String apiKey = "49fc2268";
 	static String uriBase = "http://www.omdbapi.com/?apikey=" + apiKey;
 
-	
+	/**
+	 * Permet de récuperer toutes les informations sur les films avec un titre donnée
+	 * 
+	 * @param title - Titre du film
+	 * @return List de Film
+	 */
 	public ArrayList<Film> getMovies(String title){
 	    ArrayList<Film> movies = new ArrayList<>();
 	    
@@ -82,7 +87,6 @@ public class OMDBQuery {
 
 		
 		if(!(plot == null) && !plot.isEmpty()) {
-			// System.out.println("Film trouvée avec OMDB");
 			movie.setResume(plot);
 			movie.setRealisateur(director);
 			if(!released.isEmpty()) {
@@ -90,7 +94,7 @@ public class OMDBQuery {
 			}
 		}
 		else {
-			// System.out.println("Aucun film trouvée avec OMDB");
+			System.out.println("Aucun film trouvée avec OMDB");
 		}
 			
 		return movie;
@@ -122,6 +126,7 @@ public class OMDBQuery {
 	 * 
 	 * @param title - titre du film
 	 * @param year - année de sorti du film
+	 * @param needList - permet de savoir si on récupere plusieurs résultat ou seulement un
 	 * @return une chaine de caractere correspondant a l'uri complete
 	 */
 	private String createURI(String title, String year, boolean needList) {

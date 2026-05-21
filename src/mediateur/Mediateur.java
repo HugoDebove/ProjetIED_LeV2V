@@ -55,8 +55,6 @@ public class Mediateur {
     }
     
     private ArrayList<Film> mergeMoviesFromSources(ArrayList<Film> moviesDB, ArrayList<Film> moviesDBPedia, ArrayList<Film> moviesOMDB){
-    	// TODO : c'est pour toi hugo
-    	// TODO : faire attention au cas ou la liste est vide
     	if (moviesDB == null) moviesDB = new ArrayList<>();
         if (moviesOMDB == null) moviesOMDB = new ArrayList<>();
         if (moviesDBPedia == null) moviesDBPedia = new ArrayList<>();
@@ -140,49 +138,6 @@ public class Mediateur {
         return mergedMovies;
     }
     
-    private ArrayList<Film> mergeMoviesListFromSources(ArrayList<Film> moviesDBAndOMDB, ArrayList<Film> moviesFromDBPedia){
-    	ArrayList<Film> movies = new ArrayList<>(moviesDBAndOMDB);
-    	ArrayList<Film> moviesDBPCopy = new ArrayList<>(moviesFromDBPedia);
-    	boolean search, goodYear, goodDirector, haveYear, merge;
-    	int count;
-    	
-    	
-    	for(Film movie : movies) {
-    		search = true;
-    		merge = false;
-    		count = 0;
-    		
-    		while(search && moviesDBPCopy.size() > count) {
-    			goodYear = goodDirector = haveYear = false;
-    			Film movieDBP = moviesDBPCopy.get(count);
-    			
-    			if(moviesFromDBPedia.size() > 1) {
-    				haveYear = true;
-    				goodYear = checkReleaseYear(movieDBP, movie);
-    			}
-    			
-    			goodDirector = checkDirector(movieDBP, movie);
-    			
-    			if(canMerge(goodDirector, goodYear, haveYear) && checkTitle(movie, movieDBP)) {
-    				movie.setActeurs(movieDBP.getActeurs());
-    				movie.setRealisateur(movieDBP.getRealisateur());
-    				movie.setProducteur(movieDBP.getProducteur());
-					
-    				search = false;
-    				moviesDBPCopy.remove(movieDBP);
-    			}
-    			
-    			count++;
-    		}
-    	}
-    	
-    	if(!moviesDBPCopy.isEmpty()) {
-    		movies.addAll(moviesDBPCopy);
-    	}
-    	
-    	return movies;
-    }
-    
     private boolean checkTitle(Film movie1, Film movie2) {
         if (movie1.getTitre() == null || movie2.getTitre() == null) return false;
 
@@ -216,35 +171,6 @@ public class Mediateur {
         return false;
     }
     
-    private boolean canMerge(boolean goodDirector, boolean goodYear, boolean haveYear) {
-    	boolean canMerge = false;
-    	if(goodDirector) {
-			if(haveYear) {
-				if(goodYear) {
-					canMerge = true;
-				}
-			}
-			else {
-				canMerge = true;
-			}
-		}
-    	
-    	return canMerge;
-    }
-    
-    private void showMovies(ArrayList<Film> movies) {
-    	//TODO : A supprimer après
-    	for(Film movie : movies) {
-    		System.out.println(movie.toString());
-    	}
-    }
-    
-    /**
-     * Permet de chercher tous les films dans les quelles un actor / une actrice à jouer
-     * 
-     * @param name - nom de l'acteur / l'actrice 
-     * @return Tous les films trouver par les sources
-     */
     /**
      * Permet de chercher tous les films dans lesquels un acteur / une actrice a joué
      * Enchaînement : DBPedia (Acteur -> Films) -> OMDB (Passerelle) -> BD Locale
@@ -254,7 +180,7 @@ public class Mediateur {
     public void searchByActorName(String name) {
         ArrayList<Film> finalMoviesList = new ArrayList<>();
         
-        // 1. Récupération des films depuis DBpedia par le nom de l'acteur
+        // Récupération des films depuis DBpedia par le nom de l'acteur
         DBPediaService dbpediaService = new DBPediaService();
         List<Film> dbpediaMovies = dbpediaService.getFilmsByActorName(name);
         
@@ -268,7 +194,7 @@ public class Mediateur {
                 
                 dbpMovie.setTitre(cleanTitle);
                 
-                // 2. OMDB sert de passerelle
+                // OMDB sert de passerelle
                 ArrayList<Film> omdbResults = getDataFromOMBD(cleanTitle);
                 Film matchedOmdbMovie = null;
                 
@@ -289,7 +215,7 @@ public class Mediateur {
                 // On privilégie le titre OMDB s'il existe, sinon le titre nettoyé de DBpedia
                 String localSearchTitle = (matchedOmdbMovie != null) ? matchedOmdbMovie.getTitre() : cleanTitle;
                 
-                // 3. Interrogation de la Base de Données locale avec le titre
+                // Interrogation de la Base de Données locale avec le titre
                 ArrayList<Film> localDBResults = getDataFromDB(localSearchTitle.toLowerCase());
                 Film matchedLocalMovie = null;
                 
@@ -360,42 +286,15 @@ public class Mediateur {
     	return dbq.getMoviesInformations(title);
     }
     
+    /**
+     * Permet de récupérer les données venant de la source DBPedia
+     * 
+     * @param title - Titre du film
+     * @return Liste de tous les films trouvées
+     */
     private ArrayList<Film> getDataFromDBBedia(String title) {
     	DBPediaService dbp = new DBPediaService();
     	return dbp.getFilmDetailsByTitle(title);
-    }
-    
-    // TODO : peut etre a supprimer
-    /*
-    private void mergeDataFromDBPAndOMDB(ArrayList<Film> moviesFromDBP, String title) {
-    	for(Film movie : moviesFromDBP) {
-			movie.setTitre(title);
-			Film movieFromOMBD = getDataFromOMBD(title, movie.getAnneeSortie());
-			if(movieFromOMBD != null) {
-				movie.setResume(movieFromOMBD.getResume());
-				movie.setRealisateur(movieFromOMBD.getRealisateur());
-			}
-		}
-    }
-    */
-    
-    /**
-     * Permet de récupérer les données venant de la source OMBD en fonction des films trouver avec la source base de données
-     * 
-     * @param moviesFromDB - Liste de tous les films trouvées
-     * @param title - Titre du film
-     */
-    private void mergeDataFromDBAndOMDB(ArrayList<Film> moviesFromDB, String title) {
-    	/*
-    	for(Film movie : moviesFromDB) {
-			movie.setTitre(title);
-			Film movieFromOMBD = getDataFromOMBD(title, movie.getAnneeSortie());
-			if(movieFromOMBD != null) {
-				movie.setResume(movieFromOMBD.getResume());
-				movie.setRealisateur(movieFromOMBD.getRealisateur());
-			}
-		}
-		*/
     }
     
     /**
@@ -409,25 +308,6 @@ public class Mediateur {
     	OMDBQuery omdbq = new OMDBQuery();
     	
     	return omdbq.getMovies(title);
-    }
-
-    // Simulation recherche de film par actor
-    public String rechercherFilmsParActeur() {
-        filmsParActeur = new ArrayList<>();
-        
-        Film f1 = new Film();
-        f1.setTitre("Le retour du giga beau gosse");
-        f1.setDateSortie("2024");
-        f1.setGenre("Action");
-        f1.setDistributeur("Universal");
-        f1.setRealisateur("Nolan");
-        f1.setProducteur("Spielberg");
-        
-        filmsParActeur.add(f1);
-        
-        listeFilmsTrouvee = true;
-        filmTrouve = false; // Pour cacher la recherche par titre
-        return null; // On ne change pas de pages
     }
 
 	public String getTitreRecherche() {
