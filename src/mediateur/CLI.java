@@ -1,5 +1,6 @@
 package mediateur;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import dbpedia.DBPediaService;
@@ -27,7 +28,11 @@ public class CLI {
             System.out.println("Recherche des infos pour : " + input + "...");
             
             try {
-                med.searchByTitle(input);
+                ArrayList<Film> movies = med.searchByTitle(input);
+                
+                for(Film movie : movies) {
+                	System.out.println(movie.toString());
+                }
             } catch (Exception e) {
                 System.err.println("Erreur : " + e.getMessage());
                 e.printStackTrace();

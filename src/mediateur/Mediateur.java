@@ -30,6 +30,7 @@ public class Mediateur {
     	
     	// Récupération des données venant de bd
     	ArrayList<Film> moviesFromDB = getDataFromDB(title.toLowerCase());
+    	System.out.println("On a trouver " + moviesFromDB.size() + " filme");
     	
     	if(moviesFromDB.size() > 0) {
     		// Récupération des données venant de omdb avec le titre et les années de production pour pouvoir fusionner les données
