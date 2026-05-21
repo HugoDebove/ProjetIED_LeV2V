@@ -113,7 +113,7 @@ public class DBPediaService {
     
     private static final Pattern ANNEE_PATTERN = Pattern.compile("\\((\\d{4})");
 
-    public List<Film> getFilmDetailsByTitle(String filmTitle) {
+    public ArrayList<Film> getFilmDetailsByTitle(String filmTitle) {
 
         Map<String, Film> filmsTrouves = new HashMap<>();
 
@@ -189,7 +189,7 @@ public class DBPediaService {
                 }
             }
             
-            List<Film> listeFilms = new ArrayList<>(filmsTrouves.values());
+            ArrayList<Film> listeFilms = new ArrayList<>(filmsTrouves.values());
 
             if (listeFilms.size() > 1) {
             	extraireAnneeDepuisTitre(listeFilms);
