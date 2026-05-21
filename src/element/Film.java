@@ -1,4 +1,5 @@
 package element;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Film {
@@ -13,7 +14,7 @@ public class Film {
     private String realisateur;
     private String producteur;
     private String resume;
-    private List<String> acteurs;
+    private ArrayList<String> acteurs;
 
     public Film() {}
 
@@ -30,6 +31,7 @@ public class Film {
                "RÉALISATEUR : " + realisateur + "\n" +
                "PRODUCTEUR : " + producteur + "\n" +
                "RESUME : " + resume + "\n" +
+               "Acteurs : " + acteurs + "\n" +
                "------------------------------------------";
     }
 
@@ -113,11 +115,11 @@ public class Film {
 		this.resume = resume;
 	}
 
-	public List<String> getActeurs() {
+	public ArrayList<String> getActeurs() {
 		return acteurs;
 	}
 
-	public void setActeurs(List<String> acteurs) {
+	public void setActeurs(ArrayList<String> acteurs) {
 		this.acteurs = acteurs;
 	}
 	
