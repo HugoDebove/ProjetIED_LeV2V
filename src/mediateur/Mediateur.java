@@ -1,7 +1,6 @@
 package mediateur;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import dbpedia.DBPediaService;
@@ -10,11 +9,6 @@ import jdbc.DBQuery;
 import rest.OMDBQuery;
 
 public class Mediateur {
-    
-    // Recherche par acteur
-    private String nomActeurRecherche;
-    private List<Film> filmsParActeur;
-    private boolean listeFilmsTrouvee = false;
     
     /**
      * Permet de chercher tous les films venant des 3 sources avec un titre
@@ -184,9 +178,11 @@ public class Mediateur {
             for (Film dbpMovie : dbpediaMovies) {
                 
                 // Nettoyage du titre DBpedia pour optimiser la recherche OMDB
-                String cleanTitle = dbpMovie.getTitre()
-                    .replaceAll("\\s*\\([^)]*\\)", "") // Enlève les "(film)", "(1997 film)", etc.
-                    .trim();
+            	String cleanTitle = dbpMovie.getTitre()
+            		    .replaceAll("\\s*\\([^)]*\\)", "") // Enlève les (film), etc.
+            		    .replaceAll("–", "-")              // Remplace les tirets longs par des tirets classiques
+            		    .replaceAll("’", "'")              // Normalise les apostrophes penchées
+            		    .trim();
                 
                 dbpMovie.setTitre(cleanTitle);
                 
@@ -197,12 +193,27 @@ public class Mediateur {
                 if (omdbResults != null && !omdbResults.isEmpty()) {
                     // On cherche la bonne correspondance d'année entre DBPedia et OMDB
                     for (Film omdbMovie : omdbResults) {
-                        if (checkReleaseYear(dbpMovie, omdbMovie)) {
+                    	
+                    	// Vérification Réalisateur
+                        boolean matchDirector = true;
+                        if (dbpMovie.getRealisateur() != null && !dbpMovie.getRealisateur().isEmpty() && !dbpMovie.getRealisateur().equalsIgnoreCase("Inconnu")) {
+                            matchDirector = checkDirector(dbpMovie, omdbMovie);
+                        }
+                        
+                        // Vérification Année si DBPedia la fournit
+                        boolean bonusYearValid = true; 
+                        if (dbpMovie.getAnneeSortie() != null && !dbpMovie.getAnneeSortie().isEmpty()) {
+                            bonusYearValid = checkReleaseYear(dbpMovie, omdbMovie);
+                        }
+                        
+                        // On a trouvé le bon film OMDB
+                        if (matchDirector && bonusYearValid) {
                             matchedOmdbMovie = omdbMovie;
                             break;
                         }
                     }
-                    // Si pas de correspondance d'année exacte trouvée, on prend le premier résultat par défaut
+                    
+                    // Si pas de correspondance trouvée, on prend le premier résultat par défaut
                     if (matchedOmdbMovie == null) {
                         matchedOmdbMovie = omdbResults.get(0);
                     }
@@ -216,13 +227,22 @@ public class Mediateur {
                 Film matchedLocalMovie = null;
                 
                 if (localDBResults != null && !localDBResults.isEmpty()) {
-                    // On cherche la correspondance dans notre DB locale
+                    // On cherche la correspondance dans notre DB locale avec la DATE COMPLÈTE d'OMDB
                     for (Film dbMovie : localDBResults) {
-                        if (matchedOmdbMovie != null && checkReleaseYear(matchedOmdbMovie, dbMovie)) {
-                            matchedLocalMovie = dbMovie;
-                            break;
+                        
+                        if (matchedOmdbMovie != null && matchedOmdbMovie.getDateSortie() != null && dbMovie.getDateSortie() != null) {
+                            
+                            String dateOmdb = matchedOmdbMovie.getDateSortie().trim().toLowerCase();
+                            String dateLocal = dbMovie.getDateSortie().trim().toLowerCase();
+                            
+                            if (dateLocal.equals(dateOmdb) || dateLocal.contains(dateOmdb) || dateOmdb.contains(dateLocal)) {
+                                matchedLocalMovie = dbMovie;
+                                break;
+                            }
                         }
                     }
+                    
+                    // Si aucun film ne concorde sur la date complète, comportement par défaut
                     if (matchedLocalMovie == null) {
                         matchedLocalMovie = localDBResults.get(0);
                     }
@@ -261,7 +281,7 @@ public class Mediateur {
             }
         }
         
-        // Tri final par score de complétude décroissant (comme pour searchByTitle)
+        // Tri final par score décroissant
         if (!finalMoviesList.isEmpty()) {
             finalMoviesList.sort((f1, f2) -> Integer.compare(f2.getInfoScore(true), f1.getInfoScore(true)));
         }
