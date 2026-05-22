@@ -10,10 +10,6 @@ import jdbc.DBQuery;
 import rest.OMDBQuery;
 
 public class Mediateur {
-    // Recherche par titre
-    private String titreRecherche;
-    private Film filmResultat;
-    private boolean filmTrouve = false;
     
     // Recherche par acteur
     private String nomActeurRecherche;
@@ -55,8 +51,6 @@ public class Mediateur {
     }
     
     private ArrayList<Film> mergeMoviesFromSources(ArrayList<Film> moviesDB, ArrayList<Film> moviesDBPedia, ArrayList<Film> moviesOMDB){
-    	// TODO : c'est pour toi hugo
-    	// TODO : faire attention au cas ou la liste est vide
     	if (moviesDB == null) moviesDB = new ArrayList<>();
         if (moviesOMDB == null) moviesOMDB = new ArrayList<>();
         if (moviesDBPedia == null) moviesDBPedia = new ArrayList<>();
@@ -140,49 +134,6 @@ public class Mediateur {
         return mergedMovies;
     }
     
-    private ArrayList<Film> mergeMoviesListFromSources(ArrayList<Film> moviesDBAndOMDB, ArrayList<Film> moviesFromDBPedia){
-    	ArrayList<Film> movies = new ArrayList<>(moviesDBAndOMDB);
-    	ArrayList<Film> moviesDBPCopy = new ArrayList<>(moviesFromDBPedia);
-    	boolean search, goodYear, goodDirector, haveYear, merge;
-    	int count;
-    	
-    	
-    	for(Film movie : movies) {
-    		search = true;
-    		merge = false;
-    		count = 0;
-    		
-    		while(search && moviesDBPCopy.size() > count) {
-    			goodYear = goodDirector = haveYear = false;
-    			Film movieDBP = moviesDBPCopy.get(count);
-    			
-    			if(moviesFromDBPedia.size() > 1) {
-    				haveYear = true;
-    				goodYear = checkReleaseYear(movieDBP, movie);
-    			}
-    			
-    			goodDirector = checkDirector(movieDBP, movie);
-    			
-    			if(canMerge(goodDirector, goodYear, haveYear) && checkTitle(movie, movieDBP)) {
-    				movie.setActeurs(movieDBP.getActeurs());
-    				movie.setRealisateur(movieDBP.getRealisateur());
-    				movie.setProducteur(movieDBP.getProducteur());
-					
-    				search = false;
-    				moviesDBPCopy.remove(movieDBP);
-    			}
-    			
-    			count++;
-    		}
-    	}
-    	
-    	if(!moviesDBPCopy.isEmpty()) {
-    		movies.addAll(moviesDBPCopy);
-    	}
-    	
-    	return movies;
-    }
-    
     private boolean checkTitle(Film movie1, Film movie2) {
         if (movie1.getTitre() == null || movie2.getTitre() == null) return false;
 
@@ -216,31 +167,16 @@ public class Mediateur {
         return false;
     }
     
-    private boolean canMerge(boolean goodDirector, boolean goodYear, boolean haveYear) {
-    	boolean canMerge = false;
-    	if(goodDirector) {
-			if(haveYear) {
-				if(goodYear) {
-					canMerge = true;
-				}
-			}
-			else {
-				canMerge = true;
-			}
-		}
-    	
-    	return canMerge;
-    }
-    
     /**
      * Permet de chercher tous les films dans lesquels un acteur / une actrice a joué
+     * Enchaînement : DBPedia (Acteur -> Films) -> OMDB (Passerelle) -> BD Locale
      * 
      * @param name - nom de l'acteur / l'actrice 
      */
-    public void searchByActorName(String name) {
+    public ArrayList<Film> searchByActorName(String name) {
         ArrayList<Film> finalMoviesList = new ArrayList<>();
         
-        // 1. Récupération des films depuis DBpedia par le nom de l'acteur
+        // Récupération des films depuis DBpedia par le nom de l'acteur
         DBPediaService dbpediaService = new DBPediaService();
         List<Film> dbpediaMovies = dbpediaService.getFilmsByActorName(name);
         
@@ -254,7 +190,7 @@ public class Mediateur {
                 
                 dbpMovie.setTitre(cleanTitle);
                 
-                // 2. OMDB sert de passerelle
+                // OMDB sert de passerelle
                 ArrayList<Film> omdbResults = getDataFromOMBD(cleanTitle);
                 Film matchedOmdbMovie = null;
                 
@@ -275,7 +211,7 @@ public class Mediateur {
                 // On privilégie le titre OMDB s'il existe, sinon le titre nettoyé de DBpedia
                 String localSearchTitle = (matchedOmdbMovie != null) ? matchedOmdbMovie.getTitre() : cleanTitle;
                 
-                // 3. Interrogation de la Base de Données locale avec le titre
+                // Interrogation de la Base de Données locale avec le titre
                 ArrayList<Film> localDBResults = getDataFromDB(localSearchTitle.toLowerCase());
                 Film matchedLocalMovie = null;
                 
@@ -330,29 +266,7 @@ public class Mediateur {
             finalMoviesList.sort((f1, f2) -> Integer.compare(f2.getInfoScore(true), f1.getInfoScore(true)));
         }
         
-        // Derniere verif : On verifie que l'acteur est bien dans la liste des acteurs
-        ArrayList<Film> verifMoviesList = new ArrayList<>();
-        for (Film movie : finalMoviesList) {
-            if (movie.getActeurs() != null && !movie.getActeurs().isEmpty()) {
-                boolean actorFound = false;
-                for (String actor : movie.getActeurs()) {
-                    if (actor.toLowerCase().contains(name.toLowerCase().trim())) {
-                        actorFound = true;
-                        break;
-                    }
-                }
-                if (actorFound) {
-                    verifMoviesList.add(movie);
-                }
-            } else {
-                verifMoviesList.add(movie);
-            }
-        }
-        finalMoviesList = verifMoviesList;
-        
-        this.filmsParActeur = finalMoviesList;
-        this.listeFilmsTrouvee = !finalMoviesList.isEmpty();
-        this.filmTrouve = false;
+        return finalMoviesList;
     }
     
     /**
@@ -363,45 +277,18 @@ public class Mediateur {
      */
     private ArrayList<Film> getDataFromDB(String title) {
     	DBQuery dbq = new DBQuery();
-    	return dbq.getMoviesInformations(title);
+    	return dbq.getMovies(title);
     }
     
+    /**
+     * Permet de récupérer les données venant de la source DBPedia
+     * 
+     * @param title - Titre du film
+     * @return Liste de tous les films trouvées
+     */
     private ArrayList<Film> getDataFromDBBedia(String title) {
     	DBPediaService dbp = new DBPediaService();
     	return dbp.getFilmDetailsByTitle(title);
-    }
-    
-    // TODO : peut etre a supprimer
-    /*
-    private void mergeDataFromDBPAndOMDB(ArrayList<Film> moviesFromDBP, String title) {
-    	for(Film movie : moviesFromDBP) {
-			movie.setTitre(title);
-			Film movieFromOMBD = getDataFromOMBD(title, movie.getAnneeSortie());
-			if(movieFromOMBD != null) {
-				movie.setResume(movieFromOMBD.getResume());
-				movie.setRealisateur(movieFromOMBD.getRealisateur());
-			}
-		}
-    }
-    */
-    
-    /**
-     * Permet de récupérer les données venant de la source OMBD en fonction des films trouver avec la source base de données
-     * 
-     * @param moviesFromDB - Liste de tous les films trouvées
-     * @param title - Titre du film
-     */
-    private void mergeDataFromDBAndOMDB(ArrayList<Film> moviesFromDB, String title) {
-    	/*
-    	for(Film movie : moviesFromDB) {
-			movie.setTitre(title);
-			Film movieFromOMBD = getDataFromOMBD(title, movie.getAnneeSortie());
-			if(movieFromOMBD != null) {
-				movie.setResume(movieFromOMBD.getResume());
-				movie.setRealisateur(movieFromOMBD.getRealisateur());
-			}
-		}
-		*/
     }
     
     /**
@@ -416,52 +303,4 @@ public class Mediateur {
     	
     	return omdbq.getMovies(title);
     }
-
-	public String getTitreRecherche() {
-		return titreRecherche;
-	}
-
-	public void setTitreRecherche(String titreRecherche) {
-		this.titreRecherche = titreRecherche;
-	}
-
-	public Film getFilmResultat() {
-		return filmResultat;
-	}
-
-	public void setFilmResultat(Film filmResultat) {
-		this.filmResultat = filmResultat;
-	}
-
-	public boolean isFilmTrouve() {
-		return filmTrouve;
-	}
-
-	public void setFilmTrouve(boolean filmTrouve) {
-		this.filmTrouve = filmTrouve;
-	}
-
-	public String getNomActeurRecherche() {
-		return nomActeurRecherche;
-	}
-
-	public void setNomActeurRecherche(String nomActeurRecherche) {
-		this.nomActeurRecherche = nomActeurRecherche;
-	}
-
-	public List<Film> getFilmsParActeur() {
-		return filmsParActeur;
-	}
-
-	public void setFilmsParActeur(List<Film> filmsParActeur) {
-		this.filmsParActeur = filmsParActeur;
-	}
-
-	public boolean isListeFilmsTrouvee() {
-		return listeFilmsTrouvee;
-	}
-
-	public void setListeFilmsTrouvee(boolean listeFilmsTrouvee) {
-		this.listeFilmsTrouvee = listeFilmsTrouvee;
-	}
 }

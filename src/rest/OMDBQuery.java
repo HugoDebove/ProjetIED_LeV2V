@@ -19,15 +19,19 @@ import java.time.format.DateTimeParseException;
 
 public class OMDBQuery {
 		
-	static String apiKey = "49fc2268";
+	static String apiKey = "6fe377cb"; //6fe377cb 49fc2268
 	static String uriBase = "http://www.omdbapi.com/?apikey=" + apiKey;
 
-	
+	/**
+	 * Permet de récuperer toutes les informations sur les films avec un titre donnée
+	 * 
+	 * @param title - Titre du film
+	 * @return List de Film
+	 */
 	public ArrayList<Film> getMovies(String title){
 	    ArrayList<Film> movies = new ArrayList<>();
 	    
 	    String uri = createURI(title, "", true);
-	    // System.out.println(uri);
 	    
 	    NodeList results = (NodeList) XPath(uri, "/root/result", XPathConstants.NODESET);
 	    
@@ -50,20 +54,20 @@ public class OMDBQuery {
 	        }
 	    }
 	    
-	    for (int i = 0; i < movies.size(); i++) {
-	        Film filmIncomplet = movies.get(i);
-	        Film filmDetaille = getMovie(filmIncomplet.getTitre(), filmIncomplet.getAnneeSortie());
-	        
-	        // On transfère les données récupérées dans notre film de la liste
-	        if (filmDetaille != null) {
-	            filmIncomplet.setResume(filmDetaille.getResume());
-	            filmIncomplet.setRealisateur(filmDetaille.getRealisateur());
-	            filmIncomplet.setDateSortie(filmDetaille.getDateSortie());
+	    for(Film movie : movies) {
+	    	Film m = getMovie(movie.getTitre(), movie.getAnneeSortie());
+	    	
+	    	// On transfère les données récupérées dans notre film de la liste
+	        if (m != null) {
+	        	movie.setResume(m.getResume());
+	        	movie.setRealisateur(m.getRealisateur());
+	        	movie.setDateSortie(m.getDateSortie());
 	        }
 	    }
 	    
 	    return movies;
 	}
+	
 	
 	/**
 	 * Permet de récuperer un film avec differente informations donnée (titre, année)
@@ -82,15 +86,11 @@ public class OMDBQuery {
 
 		
 		if(!(plot == null) && !plot.isEmpty()) {
-			// System.out.println("Film trouvée avec OMDB");
 			movie.setResume(plot);
 			movie.setRealisateur(director);
 			if(!released.isEmpty()) {
 				movie.setDateSortie(convertReleaseDate(released));				
 			}
-		}
-		else {
-			// System.out.println("Aucun film trouvée avec OMDB");
 		}
 			
 		return movie;
@@ -112,7 +112,7 @@ public class OMDBQuery {
 	        	return exp.evaluate(document, returnType);
 	        
 	        } catch(Exception e){
-	        	System.out.println(e.getMessage());
+	        	//System.out.println(e.getMessage());
 	        }
 	        return null;
     }
@@ -122,6 +122,7 @@ public class OMDBQuery {
 	 * 
 	 * @param title - titre du film
 	 * @param year - année de sorti du film
+	 * @param needList - permet de savoir si on récupere plusieurs résultat ou seulement un
 	 * @return une chaine de caractere correspondant a l'uri complete
 	 */
 	private String createURI(String title, String year, boolean needList) {
