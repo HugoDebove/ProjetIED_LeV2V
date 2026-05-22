@@ -10,10 +10,6 @@ import jdbc.DBQuery;
 import rest.OMDBQuery;
 
 public class Mediateur {
-    // Recherche par titre
-    private String titreRecherche;
-    private Film filmResultat;
-    private boolean filmTrouve = false;
     
     // Recherche par acteur
     private String nomActeurRecherche;
@@ -177,7 +173,7 @@ public class Mediateur {
      * 
      * @param name - nom de l'acteur / l'actrice 
      */
-    public void searchByActorName(String name) {
+    public ArrayList<Film> searchByActorName(String name) {
         ArrayList<Film> finalMoviesList = new ArrayList<>();
         
         // Récupération des films depuis DBpedia par le nom de l'acteur
@@ -270,9 +266,7 @@ public class Mediateur {
             finalMoviesList.sort((f1, f2) -> Integer.compare(f2.getInfoScore(true), f1.getInfoScore(true)));
         }
         
-        this.filmsParActeur = finalMoviesList;
-        this.listeFilmsTrouvee = !finalMoviesList.isEmpty();
-        this.filmTrouve = false;
+        return finalMoviesList;
     }
     
     /**
@@ -283,7 +277,7 @@ public class Mediateur {
      */
     private ArrayList<Film> getDataFromDB(String title) {
     	DBQuery dbq = new DBQuery();
-    	return dbq.getMoviesInformations(title);
+    	return dbq.getMovies(title);
     }
     
     /**
@@ -309,52 +303,4 @@ public class Mediateur {
     	
     	return omdbq.getMovies(title);
     }
-
-	public String getTitreRecherche() {
-		return titreRecherche;
-	}
-
-	public void setTitreRecherche(String titreRecherche) {
-		this.titreRecherche = titreRecherche;
-	}
-
-	public Film getFilmResultat() {
-		return filmResultat;
-	}
-
-	public void setFilmResultat(Film filmResultat) {
-		this.filmResultat = filmResultat;
-	}
-
-	public boolean isFilmTrouve() {
-		return filmTrouve;
-	}
-
-	public void setFilmTrouve(boolean filmTrouve) {
-		this.filmTrouve = filmTrouve;
-	}
-
-	public String getNomActeurRecherche() {
-		return nomActeurRecherche;
-	}
-
-	public void setNomActeurRecherche(String nomActeurRecherche) {
-		this.nomActeurRecherche = nomActeurRecherche;
-	}
-
-	public List<Film> getFilmsParActeur() {
-		return filmsParActeur;
-	}
-
-	public void setFilmsParActeur(List<Film> filmsParActeur) {
-		this.filmsParActeur = filmsParActeur;
-	}
-
-	public boolean isListeFilmsTrouvee() {
-		return listeFilmsTrouvee;
-	}
-
-	public void setListeFilmsTrouvee(boolean listeFilmsTrouvee) {
-		this.listeFilmsTrouvee = listeFilmsTrouvee;
-	}
 }

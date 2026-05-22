@@ -113,6 +113,12 @@ public class DBPediaService {
     
     private static final Pattern ANNEE_PATTERN = Pattern.compile("\\((\\d{4})");
 
+    /**
+     * Permet de chercher tous les films ayant le titre <filmTitle>.
+     * 
+     * @param filmTitle - Titre du film 
+     * @return Tous les films trouvées par DBpedia
+     */
     public ArrayList<Film> getFilmDetailsByTitle(String filmTitle) {
 
         Map<String, Film> filmsTrouves = new HashMap<>();
@@ -205,6 +211,12 @@ public class DBPediaService {
         }
     }
     
+    /**
+     * Permet de chercher tous les films dans lequel l'acteur <actorName> a joué.
+     * 
+     * @param actorName - Nom de l'acteur
+     * @return Tous les films trouvées par DBpedia
+     */
     public List<Film> getFilmsByActorName(String actorName) {
 
         Map<String, Film> filmsTrouves = new HashMap<>();
@@ -277,6 +289,11 @@ public class DBPediaService {
         }
     }
     
+    /**
+     * Permet d'extraire l'année depuis le titre d'un film, ex : Titanic (film 1997)
+     * 
+     * @param listeFilms - La liste des films
+     */
     private void extraireAnneeDepuisTitre(List<Film> listeFilms) {
         for (Film f : listeFilms) {
             if (f.getTitre() != null) {

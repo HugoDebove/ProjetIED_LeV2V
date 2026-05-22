@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 
 public class DBQuery {
 	
-	Connection dbConnection = JdbcConnection.getConnection(); // Connection à la bd
 
 		
 	/**
@@ -21,9 +20,11 @@ public class DBQuery {
 	 * @param title - titre du film donnée
 	 * @return List de tous les films trouvées
 	 */
-	public ArrayList<Film> getMoviesInformations(String title) {
+	public ArrayList<Film> getMovies(String title) {
 		ArrayList<Film> movies = new ArrayList<>();
 		try {
+			
+			Connection dbConnection = JdbcConnection.getConnection(); // Connection à la bd
 			
 			// Préparation de la requête pour la bd
 			String selectFilmsQuery = "SELECT * FROM films Where titre = ?";
